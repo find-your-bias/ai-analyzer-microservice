@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ai-analyzer
+  name: ai-analyzer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-analyzer
+  template:
+    metadata:
+      labels:
+        app: ai-analyzer
+    spec:
+      containers:
+      - image: deadvexon/ai-analyzer-find-your-bias:e575832a6b342c31adc4247a2dcb24ebd9f9b1f4
+        name: ai-analyzer
+        env:
+        - name: AWS_REGION
+          value: "us-east-1" # Or your preferred AWS region
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-credentials # This secret must be created in your cluster
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-credentials # This secret must be created in your cluster
+              key: AWS_SECRET_ACCESS_KEY
+        ports:
+        - containerPort: 5001
+          name: ai-analyzer
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5001
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5001
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          requests:
+            cpu: "100m"
+          limits:
+            cpu: "200m"

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ai-analyzer
+  name: ai-analyzer
+spec:
+  type: ClusterIP
+  ports:
+  - name: "ai-analyzer-service"
+    port: 5001
+    targetPort: 5001
+  selector:
+    app: ai-analyzer
