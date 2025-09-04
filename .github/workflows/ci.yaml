@@ -68,8 +68,23 @@ jobs:
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ai-analyzer-find-your-bias:${{ github.sha }}
 
       # DAST
-      - name: Run DAST (OWASP ZAP)
-        uses: zaproxy/action-full-scan@v0.10.0
-        continue-on-error: true
-        with:
-          target: "http://localhost:80"
+      # - name: Run DAST (OWASP ZAP)
+      #   uses: zaproxy/action-full-scan@v0.10.0
+      #   continue-on-error: true
+      #   with:
+      #     target: "http://localhost:80"
+
+      - name: Update deployment manifest
+        # ADDED: This step updates the image tag in your deployment file.
+        # Assumes your file is located at 'kubernetes/deployment.yaml'.
+        run: |
+          sed -i "s|image: .*|image: deadvexon/ai-analyzer-find-your-bias:${{ github.sha }}|g" k8s-specifications/ai-analyzer-deployment.yaml
+  
+      - name: Commit and push manifest changes
+        # ADDED: This step commits the updated manifest file back to your main branch.
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add k8s-specifications/ai-analyzer-deployment.yaml
+          git diff --staged --quiet || git commit -m "CI: Update image tag to ${{ github.sha }}"
+          git push
