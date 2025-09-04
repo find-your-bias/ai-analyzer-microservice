@@ -1,0 +1,35 @@
+name: K8s specifications CI/CD
+
+on:
+  push:
+    paths:
+      - 'k8s-specifications/**'
+
+jobs:
+  validate-and-deploy:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # - name: Ensure pip and yamllint are installed
+      #   run: |
+      #     if ! command -v pip3 &> /dev/null; then
+      #       echo "pip3 not found, installing..."
+      #       sudo apt-get update
+      #       sudo apt-get install -y python3-pip
+      #     fi
+      #     pip3 install --upgrade pip
+      #     pip3 install yamllint
+
+      # - name: Validate Kubernetes specifications (YAML syntax)
+      #   run: |
+      #     yamllint k8s-specifications/ || true
+
+      # - name: Dry-run kubectl apply
+      #   run: |
+      #     kubectl apply --dry-run=client -f k8s-specifications/ -R
+
+      - name: Deploy Kubernetes specifications
+        run: |
+          kubectl apply -f k8s-specifications/ -R
