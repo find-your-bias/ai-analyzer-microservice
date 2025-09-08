@@ -19,16 +19,16 @@ spec:
         name: ai-analyzer
         env:
         - name: AWS_REGION
-          value: "us-east-1" # Or your preferred AWS region
+          value: "us-east-1" 
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
-              name: aws-credentials # This secret must be created in your cluster
+              name: aws-credentials 
               key: AWS_ACCESS_KEY_ID
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: aws-credentials # This secret must be created in your cluster
+              name: aws-credentials 
               key: AWS_SECRET_ACCESS_KEY
         ports:
         - containerPort: 5001
