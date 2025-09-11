@@ -1,51 +1,26 @@
 import os
-import json
 import psycopg2
-import boto3
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
 from flask_cors import CORS
+from langchain_aws import Bedrock
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 
 app = Flask(__name__)
 CORS(app) # This will enable CORS for all routes
 
-# Configure Bedrock client
-bedrock_runtime = boto3.client(
-    service_name='bedrock-runtime',
-    region_name=os.getenv("AWS_REGION", "us-east-1")
+# 1. Configure LangChain with Bedrock
+# No need to manually create a boto3 client. LangChain handles it.
+llm = Bedrock(
+    model_id="anthropic.claude-v2",
+    model_kwargs={"max_tokens_to_sample": 500, "temperature": 0.7}
 )
 
-def get_db_connection():
-    """Establishes a connection to the PostgreSQL database."""
-    conn = psycopg2.connect(
-        host="db",
-        database="postgres",
-        user="postgres",
-        password="postgres"
-    )
-    return conn
-
-@app.route('/', methods=['GET'])
-def analyze_votes():
-    """
-    Analyzes the voting data by sending it to AWS Bedrock and returns the analysis.
-    """
-    print("result reached ai-analyzer")
-    try:
-        # 1. Fetch data from the database
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("SELECT tweet, vote FROM votes WHERE created_at > NOW() - INTERVAL '10 minutes'")
-        votes_data = cur.fetchall()
-        cur.close()
-        conn.close()
-
-        if not votes_data:
-            return jsonify({"analysis": "Not enough data to perform analysis."})
-
-        # 2. Format the data for the prompt
-        formatted_votes = "\n".join([f"- Tweet: \"{row[0]}\", Vote: {'Agree' if row[1] == 'a' else 'Disagree'}" for row in votes_data])
-        
-        prompt = f"""
+# 2. Create a Prompt Template
+# The template now has an {input} variable for the formatted votes.
+prompt_template = PromptTemplate(
+    input_variables=["formatted_votes"],
+    template="""
 Human: Here is a list of votes from users reacting to various tweets. 
 
 Voting Data:
@@ -60,29 +35,54 @@ Provide the analysis as a single block of text.
 
 Assistant:
 """
+)
 
-        # 3. Call the Bedrock API (Claude model)
-        body = json.dumps({
-            "prompt": prompt,
-            "max_tokens_to_sample": 500,
-            "temperature": 0.7,
-        })
+# 3. Create an LLMChain
+# This chain combines the prompt template and the LLM.
+chain = LLMChain(llm=llm, prompt=prompt_template)
 
-        modelId = 'anthropic.claude-v2'
-        accept = 'application/json'
-        contentType = 'application/json'
+def get_db_connection():
+    """Establishes a connection to the PostgreSQL database."""
+    conn = psycopg2.connect(
+        host="db",
+        database="postgres",
+        user="postgres",
+        password="postgres"
+    )
+    return conn
 
-        response = bedrock_runtime.invoke_model(body=body, modelId=modelId, accept=accept, contentType=contentType)
-        response_body = json.loads(response.get('body').read())
+@app.route('/', methods=['GET'])
+def analyze_votes():
+    """
+    Analyzes the voting data by sending it to AWS Bedrock using LangChain and returns the analysis.
+    """
+    print("result reached ai-analyzer")
+    try:
+        # Fetch data from the database
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT tweet, vote FROM votes WHERE created_at > NOW() - INTERVAL '10 minutes'")
+        votes_data = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        if not votes_data:
+            return jsonify({"analysis": "Not enough data to perform analysis."})
+
+        # Format the data for the prompt
+        formatted_votes = "\n".join([f"- Tweet: \"{row[0]}\", Vote: {'Agree' if row[1] == 'a' else 'Disagree'}" for row in votes_data])
         
-        analysis = response_body.get('completion')
+        # 4. Run the LangChain chain
+        # The chain handles formatting the prompt and calling the model.
+        result = chain.invoke({"formatted_votes": formatted_votes})
+        analysis = result.get('text')
 
         return jsonify({"analysis": analysis})
 
     except Exception as e:
         # Log the exception for debugging
         app.logger.error(f"An error occurred: {e}")
-        # Check for specific Boto3 exceptions if needed
+        # Generic error handling is more suitable now
         if "AccessDeniedException" in str(e):
              return jsonify({"error": "AWS credentials are not configured correctly or lack permissions for Bedrock."}), 403
         return jsonify({"error": "An internal error occurred while analyzing the votes."}), 500
