@@ -15,16 +15,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: ${{ github.event.workflow_run.head_repository.full_name }}
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: main #${{ github.event.workflow_run.head_sha }}
 
       - name: Configure AWS Secret for K8s
         run: |
-          kubectl delete secret aws-credentials --ignore-not-found
-          kubectl create secret generic aws-credentials \
+          sudo -u ubuntu kubectl delete secret aws-credentials --ignore-not-found
+          sudo -u ubuntu kubectl create secret generic aws-credentials \
             --from-literal=AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
             --from-literal=AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Deploy AI Analyzer Service
         run: |
-          kubectl set image deployment/ai-analyzer ai-analyzer=${{ secrets.DOCKER_HUB_USERNAME }}/ai-analyzer-find-your-bias:${{ github.event.workflow_run.head_sha }}
-          kubectl rollout status deployment/ai-analyzer
+          sudo -u ubuntu kubectl set image deployment/ai-analyzer ai-analyzer=${{ secrets.DOCKER_HUB_USERNAME }}/ai-analyzer-find-your-bias:${{ github.event.workflow_run.head_sha }}
+          sudo -u ubuntu kubectl rollout status deployment/ai-analyzer

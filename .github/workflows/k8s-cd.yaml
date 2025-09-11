@@ -32,4 +32,4 @@ jobs:
 
       - name: Deploy Kubernetes specifications
         run: |
-          kubectl apply -f k8s-specifications/ -R
+          sudo -u ubuntu kubectl apply -f k8s-specifications/ -R
