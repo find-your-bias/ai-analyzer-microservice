@@ -30,22 +30,27 @@ Based on this data, please provide a concise analysis of the voting audience. An
 2. **Echo Chamber Strength**: How strong is the echo chamber? Is the audience open to different viewpoints or do they vote predictably along party lines?
 3. **Key Themes**: What are the key topics or themes that the audience strongly agrees or disagrees with?
 
-Provide the analysis as a single block of text. This is the start of our conversation. I will ask follow-up questions after this.
+Provide the analysis as a single block of text with answers of each of the above mentioned 3 topics. This is the start of our conversation. I will ask follow-up questions after this. Keep it as concise as possible.
 
 Assistant:
 """
 )
 
 # 3. Conversational Prompt (for follow-up questions)
-# This prompt now includes a {history} variable managed by LangChain.
+# This prompt is designed to make the AI act as a "devil's advocate".
 conversational_template = """
-The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context.
+The following is a debate between a human and an AI. The AI's role is to act as a "devil's advocate."
+The initial analysis of an audience's bias is provided below. Based on that analysis, the AI must take the *opposite* stance during the conversation.
+The AI should respectfully challenge the user's assumptions and present well-reasoned counter-arguments to the audience's likely point of view. The goal is to help the user explore alternative perspectives. The AI should consider basic empathy and not make arguments that are harmful to any community.
+
+Initial Analysis Summary (The audience's likely bias):
+{initial_analysis}
 
 Current conversation:
 {history}
 Human: {input}
 Assistant:"""
-CONVERSATION_PROMPT = PromptTemplate(input_variables=["history", "input"], template=conversational_template)
+CONVERSATION_PROMPT = PromptTemplate(input_variables=["initial_analysis", "history", "input"], template=conversational_template)
 
 
 def get_db_connection():
@@ -104,9 +109,15 @@ def chat():
         return jsonify({"error": "No user input provided."}), 400
 
     try:
+        # The initial analysis is the first message from the assistant in the history
+        initial_analysis = ""
+        if history and history[0]["role"] == "assistant":
+            initial_analysis = history[0]["content"]
+
         # Create a new conversation chain for each request, seeding it with history
         memory = ConversationBufferMemory(human_prefix="Human", ai_prefix="Assistant")
-        for message in history:
+        # We skip the first message because it's the initial analysis, not a conversational turn
+        for message in history[1:]:
             if message["role"] == "user":
                 memory.chat_memory.add_user_message(message["content"])
             elif message["role"] == "assistant":
@@ -119,7 +130,8 @@ def chat():
             verbose=True
         )
         
-        response = conversation.predict(input=user_input)
+        # Inject the initial analysis into the prompt
+        response = conversation.predict(input=user_input, initial_analysis=initial_analysis)
         return jsonify({"response": response})
 
     except Exception as e:
