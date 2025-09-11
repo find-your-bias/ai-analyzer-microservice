@@ -26,9 +26,8 @@ Voting Data:
 {formatted_votes}
 
 Based on this data, please provide a concise analysis of the voting audience. Answer the following:
-1. **Overall Bias**: What is the likely political bias of this audience (e.g., Left-leaning, Right-leaning, Centrist, etc.)?
-2. **Echo Chamber Strength**: How strong is the echo chamber? Is the audience open to different viewpoints or do they vote predictably along party lines?
-3. **Key Themes**: What are the key topics or themes that the audience strongly agrees or disagrees with?
+The likely political bias of this audience (e.g., Left-leaning, Right-leaning, Centrist, etc.)?
+What are the key topics or themes that the audience strongly agrees or disagrees with?
 
 Provide the analysis with answers of each of the above mentioned 3 topics. Keep the analysis as concise as possible. At the end of your analysis ask a follow-up question acting as a devil's advocate. This is the start of our conversation. I will ask follow-up questions after this.
 
@@ -40,8 +39,8 @@ Assistant:
 # This prompt is designed to make the AI act as a "devil's advocate".
 conversational_template = """
 The following is a debate between a human and an AI. The AI's role is to act as a "devil's advocate."
-The initial analysis of an audience's bias is provided below. Based on that analysis, the AI must take the *opposite* stance during the conversation.
-The AI should respectfully challenge the user's assumptions and present well-reasoned counter-arguments to the audience's likely point of view. The goal is to help the user explore alternative perspectives. The AI should consider basic empathy and not make arguments that are harmful to any community.
+The initial analysis of an audience's bias is provided below. Based on that analysis, the AI must take the *opposite* stance of the audience during the conversation.
+The AI should respectfully challenge the audience's assumptions and present well-reasoned counter-arguments to the audience's likely point of view. The goal is to help the user explore alternative perspectives. The AI should consider basic empathy and not make arguments that are harmful to any community.
 
 Initial Analysis Summary (The audience's likely bias):
 {initial_analysis}
