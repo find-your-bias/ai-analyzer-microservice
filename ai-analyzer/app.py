@@ -2,20 +2,20 @@ import os
 import psycopg2
 from flask import Flask, jsonify
 from flask_cors import CORS
-from langchain_aws import BedrockLLM   # ✅ Correct import
+from langchain_aws import ChatBedrock   # ✅ use ChatBedrock for Claude v3
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
-# 1. Configure LangChain with Bedrock
-llm = BedrockLLM(
+# 1. Configure LangChain with Bedrock (Claude v3 needs ChatBedrock)
+llm = ChatBedrock(
     model_id="anthropic.claude-3-sonnet-20240229-v1:0",
     model_kwargs={"max_tokens": 500, "temperature": 0.7}
 )
 
-# 2. Create a Prompt Template
+# 2. Prompt template
 prompt_template = PromptTemplate(
     input_variables=["formatted_votes"],
     template="""
@@ -35,11 +35,10 @@ Assistant:
 """
 )
 
-# 3. Create an LLMChain
+# 3. Chain
 chain = LLMChain(llm=llm, prompt=prompt_template)
 
 def get_db_connection():
-    """Establishes a connection to the PostgreSQL database."""
     return psycopg2.connect(
         host="db",
         database="postgres",
@@ -49,12 +48,8 @@ def get_db_connection():
 
 @app.route('/', methods=['GET'])
 def analyze_votes():
-    """
-    Analyzes the voting data by sending it to AWS Bedrock using LangChain and returns the analysis.
-    """
     print("result reached ai-analyzer")
     try:
-        # Fetch data from the database
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("SELECT tweet, vote FROM votes WHERE created_at > NOW() - INTERVAL '10 minutes'")
@@ -65,15 +60,14 @@ def analyze_votes():
         if not votes_data:
             return jsonify({"analysis": "Not enough data to perform analysis."})
 
-        # Format the data for the prompt
         formatted_votes = "\n".join(
             [f'- Tweet: "{row[0]}", Vote: {"Agree" if row[1] == "a" else "Disagree"}'
              for row in votes_data]
         )
-        
-        # 4. Run the LangChain chain
+
         result = chain.invoke({"formatted_votes": formatted_votes})
-        analysis = result.get("text")
+        # ChatBedrock returns AIMessage object, unwrap text
+        analysis = result.get("text") or getattr(result, "content", "")
 
         return jsonify({"analysis": analysis})
 
