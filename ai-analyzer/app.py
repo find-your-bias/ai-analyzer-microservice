@@ -11,11 +11,10 @@ CORS(app) # This will enable CORS for all routes
 
 # 1. Configure LangChain with Bedrock
 # No need to manually create a boto3 client. LangChain handles it.
-llm = Bedrock(
-    model_id="anthropic.claude-v2",
-    model_kwargs={"max_tokens_to_sample": 500, "temperature": 0.7}
+llm = BedrockLLM(
+    model_id="anthropic.claude-3-sonnet-20240229-v1:0",
+    model_kwargs={"max_tokens": 500, "temperature": 0.7}
 )
-
 # 2. Create a Prompt Template
 # The template now has an {input} variable for the formatted votes.
 prompt_template = PromptTemplate(
