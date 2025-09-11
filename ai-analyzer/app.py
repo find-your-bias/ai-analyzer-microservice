@@ -30,7 +30,7 @@ Based on this data, please provide a concise analysis of the voting audience. An
 2. **Echo Chamber Strength**: How strong is the echo chamber? Is the audience open to different viewpoints or do they vote predictably along party lines?
 3. **Key Themes**: What are the key topics or themes that the audience strongly agrees or disagrees with?
 
-Provide the analysis as a single block of text with answers of each of the above mentioned 3 topics. This is the start of our conversation. I will ask follow-up questions after this. Keep it as concise as possible.
+Provide the analysis with answers of each of the above mentioned 3 topics. Keep the analysis as concise as possible. At the end of your analysis ask a follow-up question acting as a devil's advocate. This is the start of our conversation. I will ask follow-up questions after this.
 
 Assistant:
 """
@@ -115,23 +115,27 @@ def chat():
             initial_analysis = history[0]["content"]
 
         # Create a new conversation chain for each request, seeding it with history
-        memory = ConversationBufferMemory(human_prefix="Human", ai_prefix="Assistant")
+        # The `initial_analysis` is passed as a partial variable to the prompt template.
+        memory = ConversationBufferMemory(memory_key="history", human_prefix="Human", ai_prefix="Assistant")
         # We skip the first message because it's the initial analysis, not a conversational turn
         for message in history[1:]:
             if message["role"] == "user":
                 memory.chat_memory.add_user_message(message["content"])
             elif message["role"] == "assistant":
                 memory.chat_memory.add_ai_message(message["content"])
-        
+
+        # The ConversationChain expects the prompt to have 'history' and 'input' as variables.
+        # We can pre-fill the 'initial_analysis' variable in the prompt.
+        prompt = CONVERSATION_PROMPT.partial(initial_analysis=initial_analysis)
+
         conversation = ConversationChain(
             llm=llm,
-            prompt=CONVERSATION_PROMPT,
+            prompt=prompt,
             memory=memory,
             verbose=True
         )
         
-        # Inject the initial analysis into the prompt
-        response = conversation.predict(input=user_input, initial_analysis=initial_analysis)
+        response = conversation.predict(input=user_input)
         return jsonify({"response": response})
 
     except Exception as e:
