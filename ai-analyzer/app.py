@@ -84,7 +84,7 @@ def analyze_votes():
         app.logger.error(f"An error occurred: {e}")
         # Generic error handling is more suitable now
         if "AccessDeniedException" in str(e):
-             return jsonify({"error": "AWS credentials are not configured correctly or lack permissions for Bedrock."}), 403
+             return jsonify({"error": "AWS credentials are not configured correctly or lack permissions for Bedrock. "}), 403
         return jsonify({"error": "An internal error occurred while analyzing the votes."}), 500
 
 @app.route("/health", methods=['GET'])
