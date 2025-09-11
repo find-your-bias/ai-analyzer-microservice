@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: ${{ github.event.workflow_run.head_repository.full_name }}
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: main #${{ github.event.workflow_run.head_sha }}
 
       - name: Configure AWS Secret for K8s
         run: |
