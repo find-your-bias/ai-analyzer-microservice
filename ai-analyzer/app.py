@@ -2,7 +2,7 @@ import os
 import psycopg2
 from flask import Flask, jsonify
 from flask_cors import CORS
-from langchain_aws import Bedrock
+from langchain_aws.llms import BedrockLLM
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 
@@ -11,7 +11,7 @@ CORS(app) # This will enable CORS for all routes
 
 # 1. Configure LangChain with Bedrock
 # No need to manually create a boto3 client. LangChain handles it.
-llm = Bedrock(
+llm = BedrockLLM(
     model_id="anthropic.claude-v2",
     model_kwargs={"max_tokens_to_sample": 500, "temperature": 0.7}
 )
