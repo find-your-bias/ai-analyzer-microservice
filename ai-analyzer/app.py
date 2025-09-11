@@ -92,5 +92,5 @@ def health_check():
     return jsonify(status="ok"), 200
 
 if __name__ == '__main__':
-    # The app runs on port 5001 to avoid conflicts with other services
+    # The app runs on port 5001 to avoid conflicts with other services *test*
     app.run(host='0.0.0.0', port=5001, debug=True)
