@@ -29,7 +29,7 @@ Based on this data, please provide a concise analysis of the voting audience. An
 The likely political bias of this audience (e.g., Left-leaning, Right-leaning, Centrist, etc.)?
 What are the key topics or themes that the audience strongly agrees or disagrees with?
 
-Provide the analysis with answers of each of the above mentioned 3 topics. Keep the analysis as concise as possible. At the end of your analysis ask a follow-up question acting as a devil's advocate. This is the start of our conversation. I will ask follow-up questions after this.
+Provide the analysis with answers of each of the above mentioned 2 topics. Keep the analysis as concise as possible. At the end of your analysis ask a follow-up question acting as a devil's advocate. This is the start of our conversation. I will ask follow-up questions after this.
 
 Assistant:
 """
