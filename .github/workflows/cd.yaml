@@ -30,8 +30,8 @@ jobs:
           sudo -u ubuntu kubectl set image deployment/ai-analyzer ai-analyzer=${{ secrets.DOCKER_HUB_USERNAME }}/ai-analyzer-find-your-bias:${{ github.event.workflow_run.head_sha }}
           sudo -u ubuntu kubectl rollout status deployment/ai-analyzer
       
-      - name: DAST (OWASP ZAP baseline)
-        uses: zaproxy/action-baseline@v0.12.0
-        with:
-          target: https://example.com
-        continue-on-error: true
+      # - name: DAST (OWASP ZAP baseline)
+      #   uses: zaproxy/action-baseline@v0.12.0
+      #   with:
+      #     target: https://example.com
+      #   continue-on-error: true
