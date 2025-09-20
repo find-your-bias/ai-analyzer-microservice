@@ -15,7 +15,7 @@ spec:
         app: ai-analyzer
     spec:
       containers:
-      - image: deadvexon/ai-analyzer-find-your-bias:17a14ad03a8fcdba6503ce7c6c7a84a6c23d29be
+      - image: deadvexon/ai-analyzer-find-your-bias:45c9b3614d2ee4ea90232fb787f0214d69584ced
         name: ai-analyzer
         env:
         - name: AWS_REGION
