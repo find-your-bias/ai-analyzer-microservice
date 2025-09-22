@@ -30,6 +30,18 @@ spec:
             secretKeyRef:
               name: aws-credentials 
               key: AWS_SECRET_ACCESS_KEY
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: POSTGRES_USER
+        - name: POSTGRES_DB
+          value: "postgres"
         ports:
         - containerPort: 5001
           name: ai-analyzer

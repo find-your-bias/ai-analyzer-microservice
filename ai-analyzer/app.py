@@ -55,9 +55,9 @@ CONVERSATION_PROMPT = PromptTemplate(input_variables=["initial_analysis", "histo
 def get_db_connection():
     return psycopg2.connect(
         host="db",
-        database="postgres",
-        user="postgres",
-        password="postgres"
+        database=os.environ.get("POSTGRES_DB", "postgres"),
+        user=os.environ.get("POSTGRES_USER", "postgres"),
+        password=os.environ.get("POSTGRES_PASSWORD")
     )
 
 @app.route('/', methods=['GET'])
